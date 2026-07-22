@@ -1,19 +1,18 @@
 <a href="https://neon-demo-lakebase-search-clip-embeddings.vercel.app">
   <img alt="Search Flickr30k photos by text, by image, or by caption, over one vector column and three Lakebase indexes." src="assets/semantic.png">
-  <h1 align="center">Build image search over CLIP embeddings with Lakebase Search</h1>
+  <h1>Build image search over CLIP embeddings with Lakebase Search</h1>
 </a>
 
-<p align="center">
+<p>
   Search 2,000 Flickr30k photos by meaning, by words, or by image. One <code>vector(512)</code> column, three Lakebase indexes, on Neon Postgres.
 </p>
 
-<p align="center">
-  <a href="https://neon-demo-lakebase-search-clip-embeddings.vercel.app"><img src="https://img.shields.io/badge/demo-live-brightgreen" alt="Live demo"></a>
+<p>
   <a href="#tech-stack"><img src="https://img.shields.io/badge/Next.js-16-black" alt="Next.js 16"></a>
   <a href="#tech-stack"><img src="https://img.shields.io/badge/Postgres-18-336791" alt="Postgres 18"></a>
 </p>
 
-<p align="center">
+<p>
   <a href="#introduction"><strong>Introduction</strong></a> ·
   <a href="#try-it"><strong>Try it</strong></a> ·
   <a href="#the-three-query-shapes"><strong>Query shapes</strong></a> ·
