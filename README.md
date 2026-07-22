@@ -4,7 +4,7 @@
   Search 2,000 <a href="https://huggingface.co/datasets/nlphuji/flickr30k">Flickr30k</a> photos by meaning, by words, or by image. One <code>vector(512)</code> column, three Lakebase indexes, on Neon Postgres.
 </p>
 
-Live demo: **https://neon-demo-lakebase-search-clip-embeddings.vercel.app**
+Try it: **https://neon-demo-lakebase-search-clip-embeddings.vercel.app**
 
 <p>
   <a href="#tech-stack"><img src="https://img.shields.io/badge/Next.js-16-black" alt="Next.js 16"></a>
@@ -23,13 +23,13 @@ Live demo: **https://neon-demo-lakebase-search-clip-embeddings.vercel.app**
 ## Introduction
 
 The corpus is [nlphuji/flickr30k](https://huggingface.co/datasets/nlphuji/flickr30k), 31,014 photos with five human-written
-captions each. Every photo and every caption in it becomes a CLIP vector living
+captions each. Every photo and every caption in it becomes a CLIP vector stored
 in one `vector(512)` column. The same query runs against `lakebase_ann` for meaning and
 `lakebase_bm25` for words, so you can watch the two disagree on the same input.
 
 CLIP encodes images and text into the same 512-dimension space. Once you hold a
-vector, the encoder that produced it stops mattering, so searching by text and
-searching by image run identical SQL.
+vector, it makes no difference which encoder produced it, so searching by text
+and searching by image run identical SQL.
 
 ## Try it
 
@@ -85,8 +85,9 @@ using lakebase_bm25 (tsv tsvector_bm25_ops)
 with (k1 = 1.2, b = 0.75);
 ```
 
-The order matters. An ANN index built on an empty table has no partitions to
-probe, and BM25 scoring depends on corpus-wide document-length statistics.
+Build them in that order. An ANN index created on an empty table has no
+partitions to probe, and BM25 scoring depends on corpus-wide document-length
+statistics.
 
 **Top-k nearest neighbour.** Identical to what you would write against
 pgvector's HNSW or IVF. Swapping the index type changes the plan and the recall,
@@ -118,7 +119,7 @@ select body, tsv <@> to_bm25query(to_tsvector('english', $1), 'captions_tsv_bm25
 from captions order by score limit 24;
 ```
 
-All of this lives in [`src/lakebase/`](src/lakebase/), four files of about 350
+All of this sits in [`src/lakebase/`](src/lakebase/), four files of about 350
 lines with [their own README](src/lakebase/README.md). The rest of the repo is
 application code that never touches the indexes.
 
