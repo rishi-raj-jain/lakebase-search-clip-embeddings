@@ -4,7 +4,7 @@
   Search 2,000 <a href="https://huggingface.co/datasets/nlphuji/flickr30k">Flickr30k</a> photos by meaning, by words, or by image. One <code>vector(512)</code> column, three Lakebase indexes, on Neon Postgres.
 </p>
 
-Try it: **https://neon-demo-lakebase-search-clip-embeddings.vercel.app**
+&rarr; https://neon-demo-lakebase-search-clip-embeddings.vercel.app
 
 <p>
   <a href="#introduction"><strong>Introduction</strong></a> ·
