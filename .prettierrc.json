@@ -1,6 +1,7 @@
 {
   "semi": false,
   "printWidth": 180,
+  "proseWrap": "never",
   "singleQuote": true,
   "plugins": ["prettier-plugin-organize-imports", "prettier-plugin-tailwindcss"]
 }
