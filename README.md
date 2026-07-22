@@ -7,11 +7,6 @@
 Try it: **https://neon-demo-lakebase-search-clip-embeddings.vercel.app**
 
 <p>
-  <a href="#tech-stack"><img src="https://img.shields.io/badge/Next.js-16-black" alt="Next.js 16"></a>
-  <a href="#tech-stack"><img src="https://img.shields.io/badge/Postgres-18-336791" alt="Postgres 18"></a>
-</p>
-
-<p>
   <a href="#introduction"><strong>Introduction</strong></a> ·
   <a href="#try-it"><strong>Try it</strong></a> ·
   <a href="#the-three-query-shapes"><strong>Query shapes</strong></a> ·
@@ -170,32 +165,6 @@ failed download or an interrupted session.
 | `npm run db:stats`              | Partition layout, index sizes, current GUCs                                                                |
 | `npm run db:warm`               | Precomputes embeddings for the default queries                                                             |
 | `npm run query -- --text "..."` | Every query shape, from the terminal                                                                       |
-
-## Things worth knowing
-
-**Text queries have no near-duplicates.** CLIP's text and image towers occupy
-separate cones of the shared space, so a phrase never lands closer than about
-0.66 to any image, even for a perfect match. Relative ranking across modalities
-still works, but absolute distance thresholds do not transfer. Near-duplicate
-mode therefore only applies photo to photo, and the app explains that instead of
-returning an empty grid.
-
-**Radius is corpus-specific.** Measured here, photo-to-photo nearest-neighbour
-distance is 0.14 at the 5th percentile, 0.25 at the median and 0.35 at the 95th.
-So 0.15 is a true near-duplicate threshold that correctly returns nothing for
-most photos, and by 0.30 every one of the twenty densest photos hits the row cap,
-at which point the threshold stops discriminating. Measure your own corpus
-before choosing a value, because these numbers will not carry over to a
-different set of images.
-
-**Vectors are L2-normalised at write time.** CLIP's projection heads do not
-output unit vectors, and cosine distance is only meaningful once they are
-normalised. The loader does this before inserting.
-
-**Query embeddings are cached in Postgres.** The index scan is cheap. Loading
-242 MB of ONNX weights on a cold instance is what costs time, so a
-`query_embeddings` table maps normalised query text to its vector and a repeated
-search skips the model entirely.
 
 ## Tech stack
 
