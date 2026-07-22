@@ -29,7 +29,7 @@ and BM25 scoring depends on corpus-wide document-length statistics.
 
 ## The three query shapes
 
-**Top-k nearest neighbour** — ordinary ANN, and identical to what you would
+**Top-k nearest neighbour.** Ordinary ANN, and identical to what you would
 write against pgvector's HNSW or IVF. Swapping the index type changes the plan
 and the recall, not the query.
 
@@ -38,7 +38,7 @@ select id, filename, embedding <=> $1 as distance
 from photos order by embedding <=> $1 limit 24;
 ```
 
-**Radius** — the one shape pgvector cannot answer from an index. `WHERE
+**Radius.** The one shape pgvector cannot answer from an index. `WHERE
 embedding <=> $1 < 0.2` is a _filter_: the index sorts by distance and cannot
 seek by it, so you scan the table. `lakebase_ann` registers `<<=>>` as a
 strategy on `vector_cosine_ops`, so the bound is pushed into the index and only
@@ -50,7 +50,7 @@ where embedding <<=>> sphere($1, $2)   -- indexed radius
 order by embedding <=> $1 limit 60;
 ```
 
-**BM25** — note that `to_bm25query` takes the _index name_ as an argument,
+**BM25.** Note that `to_bm25query` takes the _index name_ as an argument,
 because scoring needs that index's corpus statistics. A plain `tsvector @@
 tsquery` match has no equivalent; it knows nothing about the corpus. `<@>`
 returns a **negative** score, so ascending order is most-relevant-first, which
@@ -87,6 +87,6 @@ rather than showing an empty grid.
 ## What is deliberately not here
 
 `src/db/` holds the connection and the ordinary lookups (corpus counts, the
-photo picker, the query-embedding cache) — plain Postgres, no vector operators.
+photo picker, the query-embedding cache), plain Postgres with no vector operators.
 `src/lib/` holds the CLIP embedding, S3 presigning and the browser code. None of
 that is Lakebase-specific, and none of it is needed to understand the above.
