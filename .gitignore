@@ -14,3 +14,7 @@ data/
 
 .playwright-mcp
 .next
+
+# scratch helper for the load progress ticker
+.counts.mjs
+data/metadata.jsonl.bak

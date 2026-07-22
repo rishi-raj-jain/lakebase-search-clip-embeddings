@@ -35,10 +35,45 @@ export function bucket(): string {
 
 const objectKey = (filename: string) => `${IMAGE_PREFIX}/${filename}`
 
+const bucketUrl = () => `${requireEnv('AWS_ENDPOINT_URL_S3').replace(/\/+$/, '')}/${bucket()}`
+
 /** Path style: `<endpoint>/<bucket>/<key>`. */
 function objectUrl(filename: string): string {
-  const endpoint = requireEnv('AWS_ENDPOINT_URL_S3').replace(/\/+$/, '')
-  return `${endpoint}/${bucket()}/${objectKey(filename)}`
+  return `${bucketUrl()}/${objectKey(filename)}`
+}
+
+/**
+ * Every image filename already in the bucket.
+ *
+ * The loader uses this to work out what it still has to upload. Paginated,
+ * because ListObjectsV2 caps a response at 1,000 keys and the full corpus is
+ * 31,014, so a single unpaged call would silently report a fraction of what is
+ * there and re-upload the rest.
+ */
+export async function listImages(): Promise<Set<string>> {
+  const names = new Set<string>()
+  const prefix = `${IMAGE_PREFIX}/`
+  let token: string | undefined
+
+  do {
+    const url = new URL(bucketUrl())
+    url.searchParams.set('list-type', '2')
+    url.searchParams.set('prefix', prefix)
+    url.searchParams.set('max-keys', '1000')
+    if (token) url.searchParams.set('continuation-token', token)
+
+    const res = await client().fetch(url.toString())
+    if (!res.ok) throw new Error(`list ${prefix} failed: ${res.status} ${await res.text()}`)
+    const xml = await res.text()
+
+    for (const [, key] of xml.matchAll(/<Key>([^<]+)<\/Key>/g)) {
+      if (key.startsWith(prefix)) names.add(key.slice(prefix.length))
+    }
+    // Absent on the last page, which is what ends the loop.
+    token = xml.match(/<NextContinuationToken>([^<]+)<\/NextContinuationToken>/)?.[1]
+  } while (token)
+
+  return names
 }
 
 /**
