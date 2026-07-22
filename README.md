@@ -1,11 +1,10 @@
-<a href="https://neon-demo-lakebase-search-clip-embeddings.vercel.app">
-  <img alt="Search Flickr30k photos by text, by image, or by caption, over one vector column and three Lakebase indexes." src="assets/semantic.png">
-  <h1>Build image search over CLIP embeddings with Lakebase Search</h1>
-</a>
+# Build image search over CLIP embeddings with Lakebase Search
 
 <p>
-  Search 2,000 Flickr30k photos by meaning, by words, or by image. One <code>vector(512)</code> column, three Lakebase indexes, on Neon Postgres.
+  Search 2,000 <a href="https://huggingface.co/datasets/nlphuji/flickr30k">Flickr30k</a> photos by meaning, by words, or by image. One <code>vector(512)</code> column, three Lakebase indexes, on Neon Postgres.
 </p>
+
+Live demo: **https://neon-demo-lakebase-search-clip-embeddings.vercel.app**
 
 <p>
   <a href="#tech-stack"><img src="https://img.shields.io/badge/Next.js-16-black" alt="Next.js 16"></a>
@@ -23,15 +22,14 @@
 
 ## Introduction
 
-Every photo and every caption in this corpus is a CLIP vector living in one
-`vector(512)` column. The same query runs against `lakebase_ann` for meaning and
+The corpus is [nlphuji/flickr30k](https://huggingface.co/datasets/nlphuji/flickr30k), 31,014 photos with five human-written
+captions each. Every photo and every caption in it becomes a CLIP vector living
+in one `vector(512)` column. The same query runs against `lakebase_ann` for meaning and
 `lakebase_bm25` for words, so you can watch the two disagree on the same input.
 
 CLIP puts images and text in a single space, which is the whole trick: once you
 hold a 512-dimension vector it no longer matters which encoder produced it.
 Text-to-image and image-to-image are literally the same SQL.
-
-Live demo: **https://neon-demo-lakebase-search-clip-embeddings.vercel.app**
 
 ## Try it
 
@@ -162,7 +160,7 @@ Every step is resumable, so a failed pull or a closed laptop costs you nothing.
 
 | Command                         | What it does                                          |
 | ------------------------------- | ----------------------------------------------------- |
-| `npm run dataset:pull`          | Flickr30k into Neon Storage and `data/metadata.jsonl` |
+| `npm run dataset:pull`          | [Flickr30k](https://huggingface.co/datasets/nlphuji/flickr30k) into Neon Storage and `data/metadata.jsonl` |
 | `npm run dataset:embed`         | CLIP over images and captions                         |
 | `npm run db:schema`             | Creates the tables, idempotent                        |
 | `npm run dataset:load`          | Embeddings into Postgres over one connection          |
