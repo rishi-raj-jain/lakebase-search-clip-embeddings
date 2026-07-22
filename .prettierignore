@@ -1,0 +1,8 @@
+node_modules
+.next
+dist
+.vercel
+data
+package-lock.json
+drizzle
+.playwright-mcp

@@ -1,0 +1,4 @@
+# The pulled dataset and generated embeddings are large and only ever used by
+# the offline scripts. Images live in Neon Storage; the app never reads these.
+data/
+.astro/

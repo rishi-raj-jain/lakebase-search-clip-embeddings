@@ -1,0 +1,13 @@
+[
+  {
+    "date": "2026-07-22",
+    "macrostructure": "Workbench",
+    "theme": "custom",
+    "theme_axes": "light / geometric-sans / warm-lava",
+    "vibe": "Lakebase docs palette, instrument-panel search tool",
+    "enrichment": "none",
+    "nav": "N9",
+    "footer": "Ft2",
+    "brief": "CLIP image search over Lakebase Search on Neon Postgres"
+  }
+]

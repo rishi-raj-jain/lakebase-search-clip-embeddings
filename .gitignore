@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.astro/
+.env
+
+# Pulled dataset + generated embeddings. Reproducible via `npm run setup`.
+# Images live in Neon Storage; data/images is only a local scratch copy.
+data/
+
+.DS_Store
+.vercel
+.env*
+!.env.example
+
+.playwright-mcp
+.next

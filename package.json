@@ -1,0 +1,44 @@
+{
+  "type": "module",
+  "name": "lakebase-search-clip-embeddings",
+  "scripts": {
+    "dev": "dotenvx run -- next dev",
+    "build": "dotenvx run -- next build",
+    "start": "dotenvx run -- next start",
+    "db:schema": "dotenvx run -- tsx scripts/create-schema.ts",
+    "dataset:pull": "dotenvx run -- tsx scripts/pull-dataset.ts",
+    "dataset:embed": "dotenvx run -- tsx scripts/embed.ts",
+    "dataset:load": "dotenvx run -- tsx scripts/load.ts",
+    "db:index": "dotenvx run -- tsx scripts/create-indexes.ts",
+    "db:stats": "dotenvx run -- tsx scripts/index-info.ts",
+    "db:warm": "dotenvx run -- tsx scripts/warm-cache.ts",
+    "query": "dotenvx run -- tsx scripts/query.ts",
+    "format": "prettier --write .",
+    "setup": "npm run dataset:pull && npm run dataset:embed && npm run db:schema && npm run dataset:load && npm run db:index && npm run db:warm"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "^2.16.1",
+    "@huggingface/transformers": "^3.7.6",
+    "@neondatabase/serverless": "^1.0.2",
+    "aws4fetch": "^1.0.20",
+    "hyparquet": "^1.20.0",
+    "hyparquet-compressors": "^1.1.1",
+    "next": "^16.2.11",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwindcss": "^4.3.3",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^22.18.11",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@types/ws": "^8.18.1",
+    "prettier": "^3.9.6",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
