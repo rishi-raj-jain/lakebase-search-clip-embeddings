@@ -21,8 +21,6 @@
   <a href="#tech-stack"><strong>Tech stack</strong></a>
 </p>
 
-<br/>
-
 ## Introduction
 
 Every photo and every caption in this corpus is a CLIP vector living in one
