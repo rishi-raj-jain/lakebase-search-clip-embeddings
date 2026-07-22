@@ -27,16 +27,16 @@ captions each. Every photo and every caption in it becomes a CLIP vector living
 in one `vector(512)` column. The same query runs against `lakebase_ann` for meaning and
 `lakebase_bm25` for words, so you can watch the two disagree on the same input.
 
-CLIP puts images and text in a single space, which is the whole trick: once you
-hold a 512-dimension vector it no longer matters which encoder produced it.
-Text-to-image and image-to-image are literally the same SQL.
+CLIP encodes images and text into the same 512-dimension space. Once you hold a
+vector, the encoder that produced it stops mattering, so searching by text and
+searching by image run identical SQL.
 
 ## Try it
 
 ### Semantic
 
-Ranks photos by cosine distance against `lakebase_ann`. Matches meaning, not
-words, so a photo whose caption shares no word with your query can still win.
+Ranks photos by cosine distance against `lakebase_ann`. It matches on meaning,
+so a photo can rank highly even when its caption shares no word with the query.
 
 [**dogs running in a grassy field**](https://neon-demo-lakebase-search-clip-embeddings.vercel.app/?q=dogs+running+in+a+grassy+field&mode=semantic)
 
@@ -44,8 +44,9 @@ words, so a photo whose caption shares no word with your query can still win.
 
 ### Keyword (BM25)
 
-The same corpus through `lakebase_bm25`. Matches lexemes, not meaning. Run the
-same words in both modes and the disagreement is the point.
+The same corpus through `lakebase_bm25`, which scores lexemes rather than
+meaning. Running the same words in both modes shows where the two rankings
+diverge.
 
 [**bicycle**](https://neon-demo-lakebase-search-clip-embeddings.vercel.app/?q=bicycle&mode=keyword)
 
@@ -84,9 +85,8 @@ using lakebase_bm25 (tsv tsvector_bm25_ops)
 with (k1 = 1.2, b = 0.75);
 ```
 
-That order is not optional. An ANN index built on an empty table has no
-partitions to probe, and BM25 scoring depends on corpus-wide document-length
-statistics.
+The order matters. An ANN index built on an empty table has no partitions to
+probe, and BM25 scoring depends on corpus-wide document-length statistics.
 
 **Top-k nearest neighbour.** Identical to what you would write against
 pgvector's HNSW or IVF. Swapping the index type changes the plan and the recall,
@@ -118,9 +118,9 @@ select body, tsv <@> to_bm25query(to_tsvector('english', $1), 'captions_tsv_bm25
 from captions order by score limit 24;
 ```
 
-All of this lives in [`src/lakebase/`](src/lakebase/), which has its own
-[README](src/lakebase/README.md). Four files, about 350 lines. Everything else
-in the repo is plumbing.
+All of this lives in [`src/lakebase/`](src/lakebase/), four files of about 350
+lines with [their own README](src/lakebase/README.md). The rest of the repo is
+application code that never touches the indexes.
 
 ## Deploy your own
 
@@ -154,44 +154,47 @@ npm run dataset:load
 npm run db:index -- --drop
 ```
 
-Every step is resumable, so a failed pull or a closed laptop costs you nothing.
+Each step skips work it has already done, so you can re-run any of them after a
+failed download or an interrupted session.
 
 ### The scripts
 
-| Command                         | What it does                                          |
-| ------------------------------- | ----------------------------------------------------- |
+| Command                         | What it does                                                                                               |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `npm run dataset:pull`          | [Flickr30k](https://huggingface.co/datasets/nlphuji/flickr30k) into Neon Storage and `data/metadata.jsonl` |
-| `npm run dataset:embed`         | CLIP over images and captions                         |
-| `npm run db:schema`             | Creates the tables, idempotent                        |
-| `npm run dataset:load`          | Embeddings into Postgres over one connection          |
-| `npm run db:index`              | Builds the three Lakebase indexes                     |
-| `npm run db:stats`              | Partition layout, index sizes, current GUCs           |
-| `npm run db:warm`               | Precomputes embeddings for the default queries        |
-| `npm run query -- --text "..."` | Every query shape, from the terminal                  |
+| `npm run dataset:embed`         | CLIP over images and captions                                                                              |
+| `npm run db:schema`             | Creates the tables, idempotent                                                                             |
+| `npm run dataset:load`          | Embeddings into Postgres over one connection                                                               |
+| `npm run db:index`              | Builds the three Lakebase indexes                                                                          |
+| `npm run db:stats`              | Partition layout, index sizes, current GUCs                                                                |
+| `npm run db:warm`               | Precomputes embeddings for the default queries                                                             |
+| `npm run query -- --text "..."` | Every query shape, from the terminal                                                                       |
 
 ## Things worth knowing
 
 **Text queries have no near-duplicates.** CLIP's text and image towers occupy
 separate cones of the shared space, so a phrase never lands closer than about
-0.66 to any image, even for a perfect match. Ranking across modalities is
-meaningful; absolute distance thresholds are not. Near-duplicate mode is only
-useful photo to photo, and the app says so rather than showing an empty grid.
+0.66 to any image, even for a perfect match. Relative ranking across modalities
+still works, but absolute distance thresholds do not transfer. Near-duplicate
+mode therefore only applies photo to photo, and the app explains that instead of
+returning an empty grid.
 
 **Radius is corpus-specific.** Measured here, photo-to-photo nearest-neighbour
 distance is 0.14 at the 5th percentile, 0.25 at the median and 0.35 at the 95th.
 So 0.15 is a true near-duplicate threshold that correctly returns nothing for
 most photos, and by 0.30 every one of the twenty densest photos hits the row cap,
-at which point the threshold stops discriminating. Measure before you pick, and
-never carry a radius across corpora.
+at which point the threshold stops discriminating. Measure your own corpus
+before choosing a value, because these numbers will not carry over to a
+different set of images.
 
-**Normalisation is not optional.** CLIP's projection heads do not produce unit
-vectors. Cosine distance only means what you think it means if you L2-normalise
-at write time, which the loader does.
+**Vectors are L2-normalised at write time.** CLIP's projection heads do not
+output unit vectors, and cosine distance is only meaningful once they are
+normalised. The loader does this before inserting.
 
-**Query embeddings are cached in Postgres.** The expensive part of a text search
-is not the index scan, it is loading 242 MB of ONNX weights on a cold instance.
-A `query_embeddings` table maps normalised query text to its vector, so a
-repeated search never runs the model at all.
+**Query embeddings are cached in Postgres.** The index scan is cheap. Loading
+242 MB of ONNX weights on a cold instance is what costs time, so a
+`query_embeddings` table maps normalised query text to its vector and a repeated
+search skips the model entirely.
 
 ## Tech stack
 
