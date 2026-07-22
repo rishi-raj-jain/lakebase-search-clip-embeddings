@@ -1,4 +1,4 @@
-# Build image search over CLIP embeddings with Lakebase Search
+# Image search over CLIP embeddings with Lakebase Search
 
 <p>
   Search 2,000 <a href="https://huggingface.co/datasets/nlphuji/flickr30k">Flickr30k</a> photos by meaning, by words, or by image. One <code>vector(512)</code> column, three Lakebase indexes, on Neon Postgres.
