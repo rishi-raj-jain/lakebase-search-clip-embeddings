@@ -46,7 +46,7 @@ Every photo inside a cosine radius of a given photo. This is the query shape pgv
 
 ![Near-duplicate search](assets/near-duplicates.png)
 
-## The three query shapes
+## How it works
 
 `npm run db:index` creates two access methods once the loader has finished:
 
@@ -60,9 +60,9 @@ using lakebase_bm25 (tsv tsvector_bm25_ops)
 with (k1 = 1.2, b = 0.75);
 ```
 
-Build them in that order. An ANN index over an empty table has no rows to partition, so it cannot probe anything, and BM25 needs the whole corpus present before it can compute document-length statistics.
+It is required that you build them in that order as An ANN index over an empty table has no rows to partition, so it cannot probe anything, and BM25 needs the whole corpus present before it can compute document-length statistics.
 
-**Top-k nearest neighbour**: You would write this exact query against pgvector's HNSW or IVF. Swapping the index type changes the plan and the recall while the query stays the same.
+**Top-k nearest neighbour**: You would write this exact query against pgvector's HNSW or IVF. Swapping the index type changes the plan and the recall while the query is same.
 
 ```sql
 select id, filename, embedding <=> $1 as distance
@@ -84,7 +84,7 @@ select body, tsv <@> to_bm25query(to_tsvector('english', $1), 'captions_tsv_bm25
 from captions order by score limit 24;
 ```
 
-All of this is in [`src/lakebase/`](src/lakebase/), four files with [their own README](src/lakebase/README.md). The rest of the repo is application code that does not touch the indexes.
+All of the related to these is in [`src/lakebase/`](src/lakebase/), four files with [their own README](src/lakebase/README.md). The rest of the repo is application code that does not touch the indexes.
 
 ## Deploy your own
 
